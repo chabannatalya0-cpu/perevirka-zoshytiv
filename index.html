@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Карта перевірки ведення учнівських зошитів</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Literata:opsz,wght@7..72,600;7..72,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#f5f7fa; --ink:#1b2230; --muted:#5a6475; --line:#d6dbe3;
+  --accent:#2b4c7e; --accent-ink:#ffffff; --accent-soft:#e3eaf5;
+  --ok:#1f7a4a; --ok-soft:#dcf0e3; --warn:#a3640c; --warn-soft:#fbeed6; --err:#b0362c; --err-soft:#f7e0dd;
+  --font-display:"Literata", Georgia, "Times New Roman", serif;
+  --font-body:"IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --r:10px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#10141b; --surface:#171d26; --surface-2:#1d2430; --ink:#e5e9f0; --muted:#9ba5b6; --line:#2b3442;
+    --accent:#8db0ea; --accent-ink:#0f1520; --accent-soft:#1f2c42; --ok:#5cc48c; --ok-soft:#173326;
+    --warn:#e8ab4c; --warn-soft:#382a12; --err:#f07a6e; --err-soft:#3b1c19; color-scheme:dark; }
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 var(--font-body); -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0; text-wrap:balance}
+h1{font:700 27px/1.2 var(--font-display)}
+h2{font:700 19px/1.3 var(--font-display)}
+p{margin:0}
+button,input,select,textarea{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.top{position:sticky; top:0; z-index:20; background:var(--surface); border-bottom:1px solid var(--line)}
+.top-in{max-width:980px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.top-in .grow{flex:1; min-width:220px}
+.sub{color:var(--muted); font-size:13px}
+.meter{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted)}
+.bar{display:inline-block; width:120px; height:6px; background:var(--surface-2); border-radius:3px; overflow:hidden; border:1px solid var(--line)}
+.bar i{display:block; height:100%; background:var(--accent); transition:width .2s}
+.saved{font-size:12px; color:var(--muted)}
+
+.wrap{max-width:980px; margin:0 auto; padding:24px 20px 120px}
+.intro{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px 24px; margin-bottom:18px}
+.intro p{color:var(--muted); margin-top:8px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px 24px; margin-bottom:18px}
+.card h2{margin-bottom:4px}
+.card h2 .n{color:var(--accent); margin-right:6px}
+.hint{color:var(--muted); font-size:14px; margin-bottom:16px}
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 18px}
+.f{display:flex; flex-direction:column; gap:5px; min-width:0}
+.f.wide{grid-column:1/-1}
+label.l{font-size:13px; font-weight:600}
+label.l .req{color:var(--err)}
+input[type=text],input[type=email],input[type=number],select,textarea{width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:var(--surface); min-width:0}
+textarea{min-height:84px; resize:vertical}
+.f.bad input,.f.bad select{border-color:var(--err); background:var(--err-soft)}
+
+.classes{display:flex; flex-direction:column; gap:12px}
+.cls{border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; background:var(--surface-2)}
+.cls-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+.cls-head b{font-size:15px}
+.cls .grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.pct{font-size:13px; color:var(--muted); margin-top:8px}
+.pct b{color:var(--ink)}
+
+.req-list{display:flex; flex-direction:column}
+.rq{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 16px; align-items:center; padding:12px 0; border-top:1px dashed var(--line)}
+.rq:first-child{border-top:0}
+.rq .t b{color:var(--accent); margin-right:6px; font-variant-numeric:tabular-nums}
+.rq .t small{display:block; color:var(--muted); font-size:13px; margin-top:2px}
+.scale{display:flex; gap:4px; flex-wrap:wrap}
+.scale button{min-width:44px; padding:6px 9px; border:1px solid var(--line); background:var(--surface); border-radius:8px; cursor:pointer; font-weight:600; font-size:14px}
+.scale button[aria-pressed=true]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.scale button.na[aria-pressed=true]{background:var(--surface-2); color:var(--ink); border-color:var(--muted)}
+.legend{font-size:13px; color:var(--muted); background:var(--surface-2); border-radius:8px; padding:8px 12px; margin-bottom:6px}
+
+.checks{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:8px 18px}
+.chk{display:flex; gap:9px; align-items:flex-start; font-size:15px; cursor:pointer}
+.chk input{margin-top:4px; width:17px; height:17px; flex:none}
+
+.btn{padding:10px 18px; border-radius:8px; border:1px solid var(--line); background:var(--surface); cursor:pointer; font-weight:600}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.small{padding:6px 12px; font-size:14px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--err); border-color:var(--err)}
+.btn:disabled{opacity:.55; cursor:not-allowed}
+.actions{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+
+.summary{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:16px}
+.sm{background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:10px 12px}
+.sm .v{font:700 22px/1.2 var(--font-display); font-variant-numeric:tabular-nums}
+.sm .k{font-size:12px; color:var(--muted)}
+
+.status{margin-top:14px; font-size:15px}
+.status.ok .done{background:var(--ok-soft); color:var(--ok); border-radius:8px; padding:12px 14px}
+.status.err{background:var(--err-soft); color:var(--err); border-radius:8px; padding:12px 14px}
+.status.warn{background:var(--warn-soft); color:var(--warn); border-radius:8px; padding:12px 14px}
+.status ul{margin:0; padding-left:18px}
+
+.mbar{position:fixed; left:0; right:0; bottom:0; background:var(--surface); border-top:1px solid var(--line); padding:10px 20px; display:flex; justify-content:center; gap:16px; align-items:center; z-index:15}
+.toast{position:fixed; left:50%; bottom:76px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:8px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:30}
+.toast.show{opacity:1}
+@media (max-width:600px){ .rq{grid-template-columns:1fr} .bar{width:80px} }
+@media print{
+  .top,.mbar,.toast,.btn,.actions{display:none !important}
+  body{background:#fff; color:#000}
+  .card,.intro{border:1px solid #999; break-inside:avoid}
+  .scale button{border:1px solid #999}
+  .scale button[aria-pressed=true]{background:#000 !important; color:#fff !important}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="grow"><b>Карта перевірки ведення учнівських зошитів</b><div class="sub" id="top-school"></div></div>
+    <div class="meter" aria-live="polite"><span id="meter-t">Заповнено 0%</span><span class="bar"><i id="meter-b" style="width:0"></i></span></div>
+    <span class="saved" id="saved">Чернетка зберігається автоматично</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1>Стан ведення учнівських зошитів і дотримання єдиних вимог до їх оформлення</h1>
+    <p id="intro-p"></p>
+  </section>
+
+  <section class="card" id="sec-1">
+    <h2><span class="n">1</span>Відомості про вчителя</h2>
+    <p class="hint">Одна карта — один предмет. Якщо ви викладаєте кілька предметів (наприклад, українську мову й літературу окремо), заповніть карту для кожного й надішліть окремо.</p>
+    <div class="grid">
+      <div class="f" id="w-fio"><label class="l" for="fio">Прізвище, ім’я, по батькові <span class="req">*</span></label><input type="text" id="fio" autocomplete="name"></div>
+      <div class="f" id="w-subject"><label class="l" for="subject">Предмет <span class="req">*</span></label><select id="subject"></select></div>
+      <div class="f"><label class="l" for="email">Email (необов’язково)</label><input type="email" id="email" autocomplete="email"></div>
+      <div class="f"><label class="l" for="period">Період, за який перевірено зошити</label><input type="text" id="period"></div>
+    </div>
+  </section>
+
+  <section class="card" id="sec-2">
+    <h2><span class="n">2</span>Наявність і перевірка зошитів за класами</h2>
+    <p class="hint">Додайте рядок для кожного класу (групи), де ви викладаєте цей предмет. Кількість учнів, які мають зошити, рахуйте з урахуванням фото зошитів, надісланих у Google Classroom.</p>
+    <div class="classes" id="classes"></div>
+    <div class="actions" style="margin-top:12px"><button type="button" class="btn small" id="add-cls">+ Додати клас</button></div>
+  </section>
+
+  <section class="card" id="sec-3">
+    <h2><span class="n">3</span>Дотримання єдиних вимог до оформлення та перевірки зошитів</h2>
+    <p class="hint">Оцініть, наскільки учні ваших класів і ви дотримуєтеся кожної вимоги, загалом за всіма класами.</p>
+    <div class="legend">3 — дотримуються всі учні (або повністю) · 2 — більшість · 1 — частина · 0 — не дотримуються · н/з — не стосується предмета</div>
+    <div class="req-list" id="reqs"></div>
+  </section>
+
+  <section class="card" id="sec-4">
+    <h2><span class="n">4</span>Типові недоліки, виявлені під час перевірки</h2>
+    <p class="hint">Позначте все, що трапляється у ваших класах.</p>
+    <div class="checks" id="defects"></div>
+    <div class="f wide" style="margin-top:12px"><label class="l" for="defOther">Інші недоліки</label><input type="text" id="defOther"></div>
+  </section>
+
+  <section class="card" id="sec-5">
+    <h2><span class="n">5</span>Вжиті заходи та пропозиції</h2>
+    <div class="grid">
+      <div class="f wide"><label class="l" for="measures">Що зроблено для усунення недоліків (робота з учнями, батьками, класними керівниками)</label><textarea id="measures"></textarea></div>
+      <div class="f wide"><label class="l" for="needs">Яка допомога або які рішення потрібні від адміністрації</label><textarea id="needs"></textarea></div>
+      <div class="f wide"><label class="l" for="comment">Коментар</label><textarea id="comment"></textarea></div>
+    </div>
+  </section>
+
+  <section class="card" id="sec-send">
+    <h2>Підсумок і надсилання</h2>
+    <div class="summary" id="summary"></div>
+    <div class="actions">
+      <button type="button" class="btn primary" id="send">Надіслати карту</button>
+      <button type="button" class="btn" id="print">Друкувати / зберегти PDF</button>
+      <button type="button" class="btn ghost danger" id="reset">Очистити карту</button>
+    </div>
+    <div class="status" id="send-status" aria-live="polite"></div>
+  </section>
+</main>
+
+<div class="mbar"><span id="mb-meter" class="sub">Заповнено 0%</span><button type="button" class="btn primary" id="mb-send">Надіслати карту</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+'use strict';
+
+/* ===== Налаштування ===== */
+const CONFIG = {
+  // Вставте сюди адресу вебзастосунку Apps Script (закінчується на /exec)
+  endpoint: '',
+  school: "КЗ «Василівський ліцей «Сузір’я»» Василівської міської ради Запорізької області",
+  year: '2026/2027',
+  period: 'листопад 2026 року'
+};
+
+/* ===== Довідники ===== */
+const SUBJECTS = ['', 'Українська мова', 'Українська література', 'Українська мова та література', 'Зарубіжна література', 'Математика (алгебра, геометрія)', 'Англійська мова'];
+const MODES = [['', '— оберіть —'], ['ochno', 'очно (в укритті)'], ['photo', 'фото в Google Classroom'], ['mixed', 'змішано']];
+const REQS = [
+  ['В1', 'Зошити підписано за єдиним зразком', 'предмет, клас, заклад освіти, прізвище та ім’я учня в родовому відмінку'],
+  ['В2', 'Дату записано відповідно до вимог предмета', 'українська мова — словами; математика — цифрами; англійська мова — англійською'],
+  ['В3', 'Записано вид роботи й тему уроку', '«Класна робота», «Домашня робота», «Робота над помилками» тощо, де це передбачено'],
+  ['В4', 'Дотримано поля та інтервали між роботами', 'відступи між класною й домашньою роботою за єдиними вимогами'],
+  ['В5', 'Записи охайні, почерк розбірливий', 'без сторонніх записів і малюнків, виправлення акуратні'],
+  ['В6', 'Таблиці, схеми, креслення виконано за вимогами', 'олівцем і лінійкою; для математики — креслення та записи розв’язань'],
+  ['В7', 'Учні систематично виконують роботу над помилками', 'після контрольних, діагностичних і поточних робіт'],
+  ['В8', 'Учитель перевіряє зошити з періодичністю за єдиними вимогами ліцею', 'з урахуванням класу та виду зошита'],
+  ['В9', 'Помилки виправлено за єдиними умовними позначками', 'з коментарем або правильним варіантом, без зайвих записів'],
+  ['В10', 'Ведення зошитів оцінюється відповідно до системи оцінювання ліцею', 'якщо в предметі не передбачено — н/з'],
+  ['В11', 'Зошити для контрольних (діагностичних) робіт зберігаються в учителя або в закладі', 'для дистанційних учнів — фото робіт у Classroom'],
+  ['В12', 'Дистанційні учні регулярно надсилають фото зошитів, учитель дає зворотний зв’язок', 'коментар або позначка в Google Classroom'],
+  ['В13', 'Обсяг домашніх завдань відповідає вимогам', 'з урахуванням Санітарного регламенту та навантаження учнів']
+];
+const DEFECTS = [
+  ['noBook', 'Частина учнів не має зошита з предмета'],
+  ['noPhoto', 'Дистанційні учні не надсилають фото зошитів'],
+  ['sign', 'Зошити підписано з помилками або не за зразком'],
+  ['date', 'Пропущено дату або вид роботи'],
+  ['messy', 'Неохайні записи, нерозбірливий почерк'],
+  ['margins', 'Не дотримано поля й інтервали'],
+  ['errwork', 'Не виконано роботу над помилками'],
+  ['hw', 'Домашні завдання не виконано або виконано не в зошиті'],
+  ['draw', 'Креслення, схеми виконано без олівця й лінійки'],
+  ['control', 'Зошити для контрольних робіт неповні або відсутні'],
+  ['check', 'Учителю бракує часу на регулярну перевірку всіх зошитів']
+];
+
+/* ===== Стан ===== */
+const LS = 'zoshyty-card-2026';
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+function uid() { return 'z' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function blankClass() { return { cls: '', students: '', withBook: '', withControl: '', checks: '', mode: '', missing: '' }; }
+function blank() { return { id: uid(), fio: '', subject: '', email: '', period: CONFIG.period, classes: [blankClass()], req: {}, defects: {}, defOther: '', measures: '', needs: '', comment: '', sentAt: '' }; }
+function load() {
+  try { const raw = localStorage.getItem(LS); if (raw) { const o = JSON.parse(raw); const b = blank(); return Object.assign(b, o, { req: o.req || {}, defects: o.defects || {}, classes: (o.classes && o.classes.length) ? o.classes : [blankClass()] }); } } catch (e) { }
+  return blank();
+}
+let D = load();
+let saveT = null, sending = false;
+function save() {
+  let okSave = true;
+  try { localStorage.setItem(LS, JSON.stringify(D)); } catch (e) { okSave = false; }
+  clearTimeout(saveT);
+  saveT = setTimeout(function () {
+    $('#saved').textContent = okSave ? 'Чернетку збережено о ' + new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : 'Чернетка не зберігається в цьому браузері';
+  }, 300);
+  meter(); summaryRender();
+}
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function num(v) { const n = parseInt(v, 10); return isNaN(n) ? null : n; }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2600); }
+
+/* ===== Рендер ===== */
+function bindSimple() {
+  $('#top-school').textContent = CONFIG.school + ' · ' + CONFIG.year + ' н. р.';
+  $('#intro-p').textContent = 'Карту заповнюють учителі української мови та літератури, зарубіжної літератури, математики й англійської мови. Відповіді надходять заступнику директора з навчально-виховної роботи для узагальнення. Чернетка зберігається в цьому браузері, тому заповнювати можна частинами. Якщо після надсилання щось виправите, надішліть ще раз: карта оновиться, а не задублюється.';
+  $('#subject').innerHTML = SUBJECTS.map(s => '<option value="' + esc(s) + '">' + (s ? esc(s) : '— оберіть —') + '</option>').join('');
+  SIMPLE.forEach(function (k) {
+    const el = $('#' + k);
+    el.addEventListener('input', function () { D[k] = el.value; const w = $('#w-' + k); if (w) w.classList.remove('bad'); save(); });
+  });
+  fillSimple();
+}
+const SIMPLE = ['fio', 'subject', 'email', 'period', 'defOther', 'measures', 'needs', 'comment'];
+function fillSimple() { SIMPLE.forEach(function (k) { $('#' + k).value = D[k] || ''; }); }
+function renderClasses() {
+  const box = $('#classes');
+  box.innerHTML = '';
+  D.classes.forEach(function (c, i) {
+    const div = document.createElement('div');
+    div.className = 'cls';
+    div.innerHTML =
+      '<div class="cls-head"><b>Клас ' + (i + 1) + '</b>' + (D.classes.length > 1 ? '<button type="button" class="btn small ghost danger" data-del="' + i + '">Видалити</button>' : '') + '</div>' +
+      '<div class="grid">' +
+      fld(i, 'cls', 'Клас / група *', 'text', 'напр. 7-А або 9 (філія)') +
+      fld(i, 'students', 'Учнів за списком', 'number') +
+      fld(i, 'withBook', 'Мають робочий зошит', 'number') +
+      fld(i, 'withControl', 'Мають зошит для контрольних робіт', 'number') +
+      fld(i, 'checks', 'Перевірок зошитів за період', 'number') +
+      '<div class="f"><label class="l" for="c' + i + '-mode">Як перевірялися зошити</label><select id="c' + i + '-mode" data-i="' + i + '" data-k="mode">' + MODES.map(m => '<option value="' + m[0] + '"' + (c.mode === m[0] ? ' selected' : '') + '>' + m[1] + '</option>').join('') + '</select></div>' +
+      fld(i, 'missing', 'Учнів, які не здали зошит / фото', 'number') +
+      '</div><div class="pct" id="pct-' + i + '"></div>';
+    box.appendChild(div);
+  });
+  $$('input,select', box).forEach(function (el) {
+    el.addEventListener('input', function () { const i = +el.dataset.i, k = el.dataset.k; D.classes[i][k] = el.value; if (k === 'cls') el.closest('.f').classList.remove('bad'); pct(i); save(); });
+  });
+  $$('[data-del]', box).forEach(function (b) {
+    b.addEventListener('click', function () { D.classes.splice(+b.dataset.del, 1); renderClasses(); save(); });
+  });
+  D.classes.forEach((c, i) => pct(i));
+}
+function fld(i, k, label, type, ph) {
+  const c = D.classes[i];
+  const req = label.endsWith('*');
+  const lab = req ? esc(label.slice(0, -1)) + '<span class="req">*</span>' : esc(label);
+  return '<div class="f" id="w-c' + i + '-' + k + '"><label class="l" for="c' + i + '-' + k + '">' + lab + '</label><input type="' + type + '"' + (type === 'number' ? ' min="0" inputmode="numeric"' : '') + ' id="c' + i + '-' + k + '" data-i="' + i + '" data-k="' + k + '" value="' + esc(c[k]) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></div>';
+}
+function pct(i) {
+  const c = D.classes[i], el = $('#pct-' + i); if (!el) return;
+  const s = num(c.students), w = num(c.withBook);
+  el.innerHTML = (s && w != null) ? 'Забезпеченість робочими зошитами: <b>' + Math.round(w / s * 100) + ' %</b>' : '';
+}
+function renderReqs() {
+  $('#reqs').innerHTML = REQS.map(function (r) {
+    return '<div class="rq"><div class="t"><b>' + r[0] + '</b>' + esc(r[1]) + '<small>' + esc(r[2]) + '</small></div><div class="scale" role="group" aria-label="' + esc(r[0]) + '">' +
+      [['3', 3], ['2', 2], ['1', 1], ['0', 0], ['н/з', 'na']].map(function (b) {
+        return '<button type="button" class="' + (b[1] === 'na' ? 'na' : '') + '" data-r="' + r[0] + '" data-v="' + b[1] + '" aria-pressed="' + (D.req[r[0]] === b[1]) + '">' + b[0] + '</button>';
+      }).join('') + '</div></div>';
+  }).join('');
+  $$('#reqs .scale button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const v = b.dataset.v === 'na' ? 'na' : +b.dataset.v;
+      D.req[b.dataset.r] = D.req[b.dataset.r] === v ? undefined : v;
+      if (D.req[b.dataset.r] === undefined) delete D.req[b.dataset.r];
+      $$('button', b.parentNode).forEach(x => x.setAttribute('aria-pressed', String(D.req[b.dataset.r] === (x.dataset.v === 'na' ? 'na' : +x.dataset.v))));
+      save();
+    });
+  });
+}
+function renderDefects() {
+  $('#defects').innerHTML = DEFECTS.map(d => '<label class="chk"><input type="checkbox" data-d="' + d[0] + '"' + (D.defects[d[0]] ? ' checked' : '') + '><span>' + esc(d[1]) + '</span></label>').join('');
+  $$('#defects input').forEach(function (el) { el.addEventListener('change', function () { D.defects[el.dataset.d] = el.checked; if (!el.checked) delete D.defects[el.dataset.d]; save(); }); });
+}
+
+/* ===== Підсумки ===== */
+function summary() {
+  let students = 0, withBook = 0, withControl = 0, missing = 0, baseBook = 0, baseControl = 0;
+  D.classes.forEach(function (c) {
+    const s = num(c.students); if (!s) return;
+    students += s; missing += num(c.missing) || 0;
+    if (num(c.withBook) != null) { withBook += num(c.withBook); baseBook += s; }
+    if (num(c.withControl) != null) { withControl += num(c.withControl); baseControl += s; }
+  });
+  let sum = 0, max = 0;
+  REQS.forEach(function (r) { const v = D.req[r[0]]; if (typeof v === 'number') { sum += v; max += 3; } });
+  const reqPct = max ? Math.round(sum / max * 100) : null;
+  const level = reqPct == null ? '' : reqPct >= 85 ? 'високий' : reqPct >= 65 ? 'достатній' : reqPct >= 45 ? 'середній' : 'низький';
+  return {
+    classes: D.classes.filter(c => c.cls.trim()).map(c => c.cls.trim()).join(', '),
+    students: students, withBook: withBook, withControl: withControl, missing: missing,
+    bookPct: baseBook ? Math.round(withBook / baseBook * 100) : null,
+    controlPct: baseControl ? Math.round(withControl / baseControl * 100) : null,
+    reqPct: reqPct, reqRated: max / 3, level: level,
+    defects: DEFECTS.filter(d => D.defects[d[0]]).map(d => d[1]).concat(D.defOther.trim() ? [D.defOther.trim()] : [])
+  };
+}
+function summaryRender() {
+  const s = summary();
+  const cells = [
+    [s.students || '—', 'учнів у ваших класах'],
+    [s.bookPct == null ? '—' : s.bookPct + ' %', 'мають робочі зошити'],
+    [s.controlPct == null ? '—' : s.controlPct + ' %', 'мають зошити для контрольних'],
+    [s.reqPct == null ? '—' : s.reqPct + ' %', 'дотримання єдиних вимог' + (s.level ? ' (' + s.level + ')' : '')],
+    [s.defects.length, 'типових недоліків позначено']
+  ];
+  $('#summary').innerHTML = cells.map(c => '<div class="sm"><div class="v">' + esc(c[0]) + '</div><div class="k">' + esc(c[1]) + '</div></div>').join('');
+}
+function meter() {
+  let done = 0, total = 0;
+  [['fio'], ['subject']].forEach(k => { total++; if (String(D[k[0]] || '').trim()) done++; });
+  total++; if (D.classes.some(c => c.cls.trim() && num(c.students))) done++;
+  total += REQS.length; done += REQS.filter(r => D.req[r[0]] !== undefined).length;
+  total++; if (Object.keys(D.defects).length || D.defOther.trim()) done++;
+  total++; if (D.measures.trim()) done++;
+  const p = Math.round(done / total * 100);
+  $('#meter-t').textContent = 'Заповнено ' + p + '%'; $('#mb-meter').textContent = 'Заповнено ' + p + '%'; $('#meter-b').style.width = p + '%';
+}
+
+/* ===== Перевірка й надсилання ===== */
+function validate() {
+  const errs = [];
+  $$('.f.bad').forEach(x => x.classList.remove('bad'));
+  if (!D.fio.trim()) { errs.push({ t: 'Вкажіть прізвище, ім’я, по батькові', w: '#w-fio' }); }
+  if (!D.subject) { errs.push({ t: 'Оберіть предмет', w: '#w-subject' }); }
+  const filled = D.classes.filter(c => c.cls.trim());
+  if (!filled.length) errs.push({ t: 'Додайте хоча б один клас', w: '#w-c0-cls' });
+  D.classes.forEach(function (c, i) {
+    const s = num(c.students), w = num(c.withBook), k = num(c.withControl);
+    if (c.cls.trim() && s != null && ((w != null && w > s) || (k != null && k > s))) errs.push({ t: 'Клас ' + c.cls + ': учнів із зошитами більше, ніж учнів за списком', w: '#w-c' + i + '-withBook' });
+  });
+  errs.forEach(e => { const el = $(e.w); if (el) el.classList.add('bad'); });
+  return errs;
+}
+async function send() {
+  if (sending) return;
+  const st = $('#send-status');
+  const errs = validate();
+  if (errs.length) {
+    st.className = 'status err';
+    st.innerHTML = '<ul>' + errs.map(x => '<li>' + esc(x.t) + '</li>').join('') + '</ul>';
+    const el = $(errs[0].w); if (el) el.scrollIntoView({ block: 'center' });
+    toast('Заповніть обов’язкові поля');
+    return;
+  }
+  if (!CONFIG.endpoint) { st.className = 'status warn'; st.textContent = 'Надсилання ще не налаштоване. Збережіть карту в PDF (кнопка «Друкувати») і передайте її заступнику директора.'; return; }
+  sending = true; $('#send').disabled = true; $('#mb-send').disabled = true;
+  st.className = 'status'; st.textContent = 'Надсилаю…';
+  const s = summary();
+  const payload = JSON.stringify({
+    id: D.id, submittedAt: new Date().toISOString(), data: D, summary: s,
+    reqs: REQS.map(r => [r[0], r[1]]),
+    classes: D.classes.filter(c => c.cls.trim()).map(c => Object.assign({}, c, { modeLabel: c.mode ? (MODES.find(m => m[0] === c.mode) || ['', ''])[1] : '' }))
+  });
+  let ok = false, confirmed = false;
+  try {
+    const r = await fetch(CONFIG.endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload, redirect: 'follow' });
+    const j = await r.json();
+    if (j && j.ok) { ok = true; confirmed = true; } else throw new Error((j && j.error) || 'server');
+  } catch (err) {
+    try { await fetch(CONFIG.endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload }); ok = true; } catch (e2) { ok = false; }
+  }
+  sending = false; $('#send').disabled = false; $('#mb-send').disabled = false;
+  if (ok) {
+    const again = !!D.sentAt;
+    D.sentAt = new Date().toISOString(); save();
+    st.className = 'status ok';
+    st.innerHTML = '<div class="done">' + (again ? 'Оновлену карту надіслано.' : 'Карту надіслано заступнику директора.') + (confirmed ? '' : ' Якщо сумніваєтеся, що вона дійшла, збережіть карту в PDF і передайте особисто.') + ' Якщо щось виправите, надішліть ще раз: карта оновиться.</div>';
+    toast(again ? 'Карту оновлено' : 'Карту надіслано');
+  } else {
+    st.className = 'status err';
+    st.textContent = 'Не вдалося надіслати. Перевірте інтернет і спробуйте ще раз. Усе заповнене збережено в чернетці.';
+  }
+}
+
+/* ===== Старт ===== */
+bindSimple(); renderClasses(); renderReqs(); renderDefects(); meter(); summaryRender();
+$('#add-cls').addEventListener('click', function () { D.classes.push(blankClass()); renderClasses(); save(); const last = $('#c' + (D.classes.length - 1) + '-cls'); if (last) last.focus(); });
+$('#send').addEventListener('click', send);
+$('#mb-send').addEventListener('click', send);
+$('#print').addEventListener('click', function () { window.print(); });
+let armed = false;
+$('#reset').addEventListener('click', function () {
+  if (!armed) { armed = true; $('#reset').textContent = 'Точно очистити? Натисніть ще раз'; setTimeout(() => { armed = false; $('#reset').textContent = 'Очистити карту'; }, 4000); return; }
+  D = blank(); try { localStorage.removeItem(LS); } catch (e) { }
+  armed = false; $('#reset').textContent = 'Очистити карту';
+  fillSimple(); renderClasses(); renderReqs(); renderDefects(); meter(); summaryRender(); $('#send-status').textContent = ''; $('#send-status').className = 'status';
+  window.scrollTo(0, 0); toast('Карту очищено');
+});
+})();
+</script>
+</body>
+</html>
