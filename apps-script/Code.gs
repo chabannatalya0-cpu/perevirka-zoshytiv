@@ -11,6 +11,7 @@
  * «Виконувати від імені»: Я; «Хто має доступ»: Усі. Скопіюйте адресу, що закінчується на /exec,
  * і вставте її в index.html (CONFIG.endpoint).
  */
+const SHEET_ID = '1ubqUdJEmxGPhftctTZzQ1aAvcp7NEFxcTZd8wGfCmt4';
 const SHEET_CARDS = 'Карти';
 const SHEET_CLASSES = 'Класи';
 const SHEET_SUMMARY = 'Зведення';
@@ -39,7 +40,7 @@ function doPost(e) {
     if (!p || !p.id || !p.data || !String(p.data.fio || '').trim()) return json_({ ok: false, error: 'bad_payload' });
     const id = String(p.id).slice(0, 64);
     const d = p.data, s = p.summary || {};
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(SHEET_ID);
     const shC = sheet_(ss, SHEET_CARDS, CARD_HEADERS);
     const shK = sheet_(ss, SHEET_CLASSES, CLASS_HEADERS);
     const now = new Date();
@@ -159,7 +160,7 @@ function json_(obj) {
 
 /** Запустіть один раз вручну перед розгортанням: створить аркуші й попросить дозволи. */
 function setup() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   sheet_(ss, SHEET_CARDS, CARD_HEADERS);
   sheet_(ss, SHEET_CLASSES, CLASS_HEADERS);
   summarySheet_(ss);
